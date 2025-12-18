@@ -3,7 +3,10 @@ import json
 import socket
 from time import sleep
 
-import requests
+try:
+    import requests  # type: ignore
+except ImportError:  # pragma: no cover - fallback when requests is unavailable
+    import simple_requests as requests
 
 from config import logger
 
@@ -29,7 +32,7 @@ class HTTPClient(object):
         :param kwargs:
         :return:
         """
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             self._s.cookies.set(k, v)
 
     def del_cookies(self):
@@ -90,7 +93,7 @@ class HTTPClient(object):
         """send request to url.If response 200,return response, else return None."""
         allow_redirects = False
         is_logger = urls["is_logger"]
-        error_data = {"code": 99999, "message": u"重试次数达到上限"}
+        error_data = {"code": 99999, "message": "重试次数达到上限"}
         self.setHeadersReferer(urls["Referer"])
         if data:
             method = "post"
@@ -100,7 +103,7 @@ class HTTPClient(object):
             self.resetHeaders()
         if is_logger:
             logger.log(
-                u"url: {0}\n入参: {1}\n请求方式: {2}\n".format(urls["req_url"],data,method,))
+                "url: {0}\n入参: {1}\n请求方式: {2}\n".format(urls["req_url"],data,method,))
         self.setHeadersHost(urls["Host"])
         if self.cdn:
             url_host = self.cdn
@@ -120,11 +123,11 @@ class HTTPClient(object):
                     if response.content:
                         if is_logger:
                             logger.log(
-                                u"出参：{0}".format(response.content))
+                                "出参：{0}".format(response.content))
                         return json.loads(response.content) if method == "post" else response.content
                     else:
                         logger.log(
-                            u"url: {} 返回参数为空".format(urls["req_url"]))
+                            "url: {} 返回参数为空".format(urls["req_url"]))
                         return error_data
                 else:
                     sleep(urls["re_time"])

@@ -2,12 +2,12 @@
 import collections
 import json
 import re
-import sys
 import csv
-import requests
+try:
+    import requests  # type: ignore
+except ImportError:  # pragma: no cover - fallback when requests is unavailable
+    import simple_requests as requests
 from config import urlConf
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 
 class CDNProxy:
@@ -42,7 +42,7 @@ class CDNProxy:
                     city_re = re.compile(r"<li id=\"(\S+)\" class=\"PingListCent PingRLlist")
                     self.city_list = re.findall(city_re, rep.content)
                     if self.city_list:
-                        print self.city_list
+                        print(self.city_list)
                         break
             else:
                 pass
@@ -79,12 +79,12 @@ class CDNProxy:
                         splits = i.split(":")
                         local_dict[splits[0]] = splits[2] if splits[0] == "result" else splits[1]
                     if local_dict and "state" in local_dict and local_dict["state"] == "1":
-                        if "responsetime" in local_dict and local_dict["responsetime"].find("毫秒") != -1 and int(filter(str.isdigit, local_dict["responsetime"])) < 100:
+                        if "responsetime" in local_dict and local_dict["responsetime"].find("毫秒") != -1 and int(list(filter(str.isdigit, local_dict["responsetime"]))) < 100:
                             f.write(json.dumps(local_dict)+"\n")
                             num += 1
             except Exception as e:
-                print(e.message)
-        print(u"本次cdn获取完成，总个数{0}".format(num))
+                print((e.message))
+        print(("本次cdn获取完成，总个数{0}".format(num)))
 
     def all_cdn(self):
         """获取cdn列表"""
@@ -98,7 +98,7 @@ class CDNProxy:
             cdn_re = re.compile(r'https://(\S+)/otn/index/init')
             cdn_ip = re.findall(cdn_re, c[0])
             if cdn_ip and c[2] == "200":
-                print(cdn_ip[0])
+                print((cdn_ip[0]))
 
 
 if __name__ == '__main__':
