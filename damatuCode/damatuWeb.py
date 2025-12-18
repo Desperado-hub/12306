@@ -3,7 +3,10 @@
 import hashlib
 import json
 import base64
-import requests
+try:
+    import requests  # type: ignore
+except ImportError:  # pragma: no cover
+    import simple_requests as requests
 
 from myException.balanceException import balanceException
 
@@ -110,7 +113,7 @@ class DamatuApi():
     def main(self):
         result = self.decode(287)
         img_code = result.replace('|', ',') if not isinstance(result, int) else ""
-        print("验证码识别坐标为{0}".format(img_code))
+        print(("验证码识别坐标为{0}".format(img_code)))
         return img_code
 
 # # 调用类型实例：

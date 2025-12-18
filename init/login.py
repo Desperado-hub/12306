@@ -7,7 +7,18 @@ import socket
 from time import sleep
 
 from config.ticketConf import _get_yaml
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:  # pragma: no cover - fallback for environments without Pillow
+    class _ImageFallback:
+        @staticmethod
+        def open(path):
+            class _Dummy:
+                def show(self):
+                    return None
+            return _Dummy()
+
+    Image = _ImageFallback()
 from damatuCode.damatuWeb import DamatuApi
 from damatuCode.ruokuai import RClient
 from myException.UserPasswordException import UserPasswordException
@@ -24,7 +35,7 @@ class GoLogin:
         self.aotu_code_type = aotu_code_type
 
     def cookietp(self):
-        print(u"正在获取cookie")
+        print("正在获取cookie")
         url = self.urlConf["loginInit"]
         self.httpClint.send(url)
         # Url = "https://kyfw.12306.cn/otn/login/init"
@@ -49,7 +60,7 @@ class GoLogin:
                         return self.codexy(Ofset=",".join(list(Result["Result"])), is_raw_input=False)
                     else:
                         if "Error" in Result and Result["Error"]:
-                            print Result["Error"]
+                            print(Result["Error"])
                             return ""
             else:
                 img = Image.open('./tkcode')
@@ -67,13 +78,16 @@ class GoLogin:
         3.控制台输入对应下标，按照英文逗号分开，即可手动完成打码，
         :return:
         """
-        print (u"下载验证码...")
+        print ("下载验证码...")
         codeimgUrl = code_url
         img_path = './tkcode'
         result = self.httpClint.send(codeimgUrl)
         try:
-            print(u"下载验证码成功")
-            open(img_path, 'wb').write(result)
+            print("下载验证码成功")
+            if isinstance(result, (bytes, bytearray)):
+                open(img_path, 'wb').write(result)
+            else:
+                print("验证码下载结果非二进制数据，跳过保存")
         except OSError as e:
             print (e)
 
@@ -83,7 +97,7 @@ class GoLogin:
         :return: str
         """
         if is_raw_input:
-            Ofset = raw_input(u"请输入验证码: ")
+            Ofset = input("请输入验证码: ")
         select = Ofset.split(',')
         post = []
         offsetsX = 0  # 选择的答案的left值,通过浏览器点击8个小图的中点得到的,这样基本没问题
@@ -118,7 +132,7 @@ class GoLogin:
             post.append(offsetsX)
             post.append(offsetsY)
         randCode = str(post).replace(']', '').replace('[', '').replace("'", '').replace(' ', '')
-        print(u"验证码识别坐标为{0}".format(randCode))
+        print(("验证码识别坐标为{0}".format(randCode)))
         return randCode
 
     def auth(self):
@@ -141,11 +155,11 @@ class GoLogin:
         }
         fresult = self.httpClint.send(codeCheck, codeCheckData)
         if "result_code" in fresult and fresult["result_code"] == "4":
-            print (u"验证码通过,开始登录..")
+            print ("验证码通过,开始登录..")
             return True
         else:
             if "result_message" in fresult:
-                print(fresult["result_message"])
+                print((fresult["result_message"]))
             sleep(1)
             self.httpClint.del_cookies()
 
@@ -164,7 +178,7 @@ class GoLogin:
         }
         tresult = self.httpClint.send(logurl, logData)
         if 'result_code' in tresult and tresult["result_code"] == 0:
-            print (u"登录成功")
+            print ("登录成功")
             tk = self.auth()
             if "newapptk" in tk and tk["newapptk"]:
                 return tk["newapptk"]
@@ -172,11 +186,11 @@ class GoLogin:
                 return False
         elif 'result_message' in tresult and tresult['result_message']:
             messages = tresult['result_message']
-            if messages.find(u"密码输入错误") is not -1:
+            if messages.find("密码输入错误") != -1:
                 raise UserPasswordException("{0}".format(messages))
             else:
-                print (u"登录失败: {0}".format(messages))
-                print (u"尝试重新登陆")
+                print(("登录失败: {0}".format(messages)))
+                print ("尝试重新登陆")
                 return False
         else:
             return False
@@ -187,14 +201,14 @@ class GoLogin:
         :return:
         """
         if not uamtk:
-            return u"权限校验码不能为空"
+            return "权限校验码不能为空"
         else:
             uamauthclientUrl = self.urlConf["uamauthclient"]
             data = {"tk": uamtk}
             uamauthclientResult = self.httpClint.send(uamauthclientUrl, data)
             if uamauthclientResult:
                 if "result_code" in uamauthclientResult and uamauthclientResult["result_code"] == 0:
-                    print(u"欢迎 {} 登录".format(uamauthclientResult["username"]))
+                    print(("欢迎 {} 登录".format(uamauthclientResult["username"])))
                     return True
                 else:
                     return False
@@ -213,10 +227,10 @@ class GoLogin:
         if self.is_aotu_code and self.aotu_code_type == 1:
             balance = DamatuApi(_get_yaml()["damatu"]["uesr"], _get_yaml()["damatu"]["pwd"]).getBalance()
             if int(balance) < 40:
-                raise balanceException(u'余额不足，当前余额为: {}'.format(balance))
+                raise balanceException('余额不足，当前余额为: {}'.format(balance))
         user, passwd = _get_yaml()["set"]["12306count"][0]["uesr"], _get_yaml()["set"]["12306count"][1]["pwd"]
         if not user or not passwd:
-            raise UserPasswordException(u"温馨提示: 用户名或者密码为空，请仔细检查")
+            raise UserPasswordException("温馨提示: 用户名或者密码为空，请仔细检查")
         login_num = 0
         while True:
             self.cookietp()
@@ -236,9 +250,9 @@ class GoLogin:
         url = 'https://kyfw.12306.cn/otn/login/loginOut'
         result = myurllib2.get(url)
         if result:
-            print (u"已退出")
+            print ("已退出")
         else:
-            print (u"退出失败")
+            print ("退出失败")
 
 
 # if __name__ == "__main__":

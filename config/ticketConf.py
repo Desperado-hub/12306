@@ -1,8 +1,12 @@
 # -*- coding: utf8 -*-
 __author__ = 'MR.wen'
+import json
 import os
-import yaml
-import PyQt5
+
+try:
+    import yaml  # type: ignore
+except ImportError:
+    yaml = None
 
 
 def _get_yaml():
@@ -10,11 +14,14 @@ def _get_yaml():
     解析yaml
     :return: s  字典
     """
-    path = os.path.join(os.path.dirname(__file__) + '/ticket_config.yaml')
-    f = open(path)
-    s = yaml.load(f)
-    f.close()
-    return s
+    config_dir = os.path.dirname(__file__)
+    yaml_path = os.path.join(config_dir, 'ticket_config.yaml')
+    json_path = os.path.join(config_dir, 'ticket_config.json')
+    if yaml is not None:
+        with open(yaml_path, encoding='utf-8') as f:
+            return yaml.safe_load(f)
+    with open(json_path, encoding='utf-8') as f:
+        return json.load(f)
 
 
 # def get_set_info():

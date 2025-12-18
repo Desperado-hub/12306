@@ -1,0 +1,32 @@
+{
+  "set": {
+    "station_dates": ["2018-02-02"],
+    "station_trains": ["G2366", "D1813", "D2975", "D1825", "D1829", "D2841", "D1833"],
+    "from_station": "邵阳",
+    "to_station": "上海",
+    "set_type": ["一等座", "二等座"],
+    "is_more_ticket": true,
+    "ticke_peoples": ["梁敏"],
+    "12306count": [
+      {"uesr": "@qq.com"},
+      {"pwd": "QWERTY"}
+    ]
+  },
+  "select_refresh_interval": 0.4,
+  "ticket_black_list_time": 6,
+  "is_aotu_code": true,
+  "aotu_code_type": 2,
+  "damatu": {
+    "uesr": "",
+    "pwd": "qazWSX1995"
+  },
+  "email_conf": {
+    "is_email": true,
+    "email": "@qq.com ",
+    "notice_email_list": "61995120@qq.com",
+    "username": "",
+    "password": "xwopwxbkupbqbfgb",
+    "host": "smtp.qq.com"
+  },
+  "is_cdn": 2
+}
